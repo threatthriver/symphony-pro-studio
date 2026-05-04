@@ -160,17 +160,38 @@ const Player = ({ videoId, title, isTheaterMode, toggleTheater }) => {
   return (
     <div 
       ref={containerRef} 
-      className="relative w-full h-full bg-black group overflow-hidden select-none cursor-none group-hover:cursor-default"
+      className={`relative w-full h-full bg-black group overflow-hidden select-none cursor-none group-hover:cursor-default transition-all duration-700 ${isTheaterMode ? 'shadow-[0_0_100px_rgba(0,0,0,0.5)]' : ''}`}
       onMouseMove={resetControlsTimeout}
       onDoubleClick={toggleFullscreen}
     >
+      {/* Immersive Ambilight Glow */}
+      <AnimatePresence>
+        {isTheaterMode && isPlaying && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.4 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-[-10%] z-0 pointer-events-none"
+          >
+            <video
+              src={streamData?.videoUrl}
+              autoPlay
+              muted
+              playsInline
+              loop
+              className="w-full h-full object-cover blur-[120px] scale-110 opacity-60"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <video
         ref={videoRef}
         src={streamData?.videoUrl}
         autoPlay
         playsInline
         muted={isMuted || streamData?.type === 'dash'}
-        className="w-full h-full object-contain"
+        className="relative z-10 w-full h-full object-contain"
         onTimeUpdate={handleTimeUpdate}
         onPlay={() => { setIsPlaying(true); if (audioRef.current) audioRef.current.play(); }}
         onPause={() => { setIsPlaying(false); if (audioRef.current) audioRef.current.pause(); }}
