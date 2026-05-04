@@ -1,0 +1,38 @@
+{
+  "name": "mac-desktop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "concurrently \"npm run dev\" \"wait-on http://127.0.0.1:5174 && electron .\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "concurrently": "^9.2.1",
+    "electron": "^41.5.0",
+    "postcss": "^8.5.13",
+    "tailwindcss": "^4.2.4",
+    "wait-on": "^9.0.5"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.4",
+    "@vitejs/plugin-react": "^6.0.1",
+    "axios": "^1.16.0",
+    "framer-motion": "^12.38.0",
+    "jintr": "^3.3.1",
+    "lucide-react": "^1.14.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "vite": "^8.0.10",
+    "youtubei.js": "^17.0.1",
+    "yt-search": "^2.13.1"
+  }
+}
