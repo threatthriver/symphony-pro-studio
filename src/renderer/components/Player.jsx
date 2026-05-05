@@ -99,6 +99,13 @@ const Player = ({ videoId, title, isTheaterMode, toggleTheater }) => {
   }, [showSettings]);
 
   useEffect(() => {
+    const unsub = window.api?.onMediaPlayPause(() => {
+      togglePlay();
+    });
+    return () => unsub?.();
+  }, [togglePlay]);
+
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       setShowControls(true);
