@@ -32,7 +32,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "aniket-kumar",
+      "owner": "threatthriver",
       "repo": "symphony-pro-studio"
     }
   },
