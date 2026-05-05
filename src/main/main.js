@@ -81,13 +81,16 @@ function startBridgeServer() {
 }
 
 function createWindow() {
-  const savedState = {
-    width: 1400,
-    height: 900,
-    x: undefined,
-    y: undefined,
-    ...JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'window-state.json'), { encoding: 'utf8', flag: 'a+' }) || '{}')
-  };
+  let savedState = { width: 1400, height: 900, x: undefined, y: undefined };
+  try {
+    const stateFile = path.join(app.getPath('userData'), 'window-state.json');
+    if (fs.existsSync(stateFile)) {
+      const data = fs.readFileSync(stateFile, 'utf8');
+      if (data) savedState = { ...savedState, ...JSON.parse(data) };
+    }
+  } catch (err) {
+    console.error('Failed to load window state:', err);
+  }
 
   win = new BrowserWindow({
     width: savedState.width,
