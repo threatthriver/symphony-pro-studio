@@ -1,23 +1,59 @@
 {
-  "name": "mac-desktop",
+  "name": "symphony-pro-studio",
   "version": "1.0.0",
-  "description": "",
+  "description": "A high-performance, cinematic YouTube client for macOS with Pro Studio aesthetics and advanced playback controls.",
   "main": "src/main/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "dist": "electron-builder",
     "preview": "vite preview",
     "start": "concurrently \"npm run dev\" \"wait-on http://127.0.0.1:5174 && electron .\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "build": {
+    "appId": "com.aniketkumar.symphony",
+    "productName": "Symphony",
+    "copyright": "Copyright © 2026 Aniket Kumar",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "files": [
+      "dist/**/*",
+      "src/main/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.video",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "aniket-kumar",
+      "repo": "symphony-pro-studio"
+    }
+  },
+  "keywords": [
+    "youtube",
+    "macos",
+    "electron",
+    "pro-studio",
+    "cinematic",
+    "symphony",
+    "youtube-github",
+    "youtube-desktop"
+  ],
+  "author": "Aniket Kumar",
+  "license": "Apache-2.0",
   "type": "commonjs",
   "devDependencies": {
     "autoprefixer": "^10.5.0",
     "concurrently": "^9.2.1",
     "electron": "^41.5.0",
+    "electron-builder": "^26.8.1",
     "postcss": "^8.5.13",
     "tailwindcss": "^4.2.4",
     "wait-on": "^9.0.5"
@@ -26,6 +62,7 @@
     "@tailwindcss/postcss": "^4.2.4",
     "@vitejs/plugin-react": "^6.0.1",
     "axios": "^1.16.0",
+    "electron-updater": "^6.8.3",
     "framer-motion": "^12.38.0",
     "jintr": "^3.3.1",
     "lucide-react": "^1.14.0",

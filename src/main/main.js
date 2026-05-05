@@ -1,4 +1,5 @@
-const { app, BrowserWindow, ipcMain, protocol } = require('electron');
+const { app, BrowserWindow, ipcMain, protocol, globalShortcut } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
@@ -80,9 +81,19 @@ function startBridgeServer() {
 }
 
 function createWindow() {
-  win = new BrowserWindow({
+  const savedState = {
     width: 1400,
     height: 900,
+    x: undefined,
+    y: undefined,
+    ...JSON.parse(fs.readFileSync(path.join(app.getPath('userData'), 'window-state.json'), { encoding: 'utf8', flag: 'a+' }) || '{}')
+  };
+
+  win = new BrowserWindow({
+    width: savedState.width,
+    height: savedState.height,
+    x: savedState.x,
+    y: savedState.y,
     titleBarStyle: 'hiddenInset',
     vibrancy: 'under-window',
     visualEffectState: 'active',
@@ -92,6 +103,11 @@ function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, '../preload/preload.js')
     }
+  });
+
+  win.on('close', () => {
+    const bounds = win.getBounds();
+    fs.writeFileSync(path.join(app.getPath('userData'), 'window-state.json'), JSON.stringify(bounds));
   });
 
   new DownloadManager(win);
@@ -353,6 +369,26 @@ app.whenReady().then(async () => {
   await getYouTube(); // Pre-initialize
   startBridgeServer();
   createWindow();
+
+  // Register Global Media Shortcuts
+  globalShortcut.register('MediaPlayPause', () => win?.webContents.send('media-play-pause'));
+  globalShortcut.register('MediaNextTrack', () => win?.webContents.send('media-next'));
+  globalShortcut.register('MediaPreviousTrack', () => win?.webContents.send('media-prev'));
+
+  // Auto Update Configuration
+  autoUpdater.checkForUpdatesAndNotify();
+  
+  autoUpdater.on('update-available', () => {
+    win?.webContents.send('update_available');
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    win?.webContents.send('update_downloaded');
+  });
+});
+
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
 });
 
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { History, MonitorPlay, Search } from 'lucide-react';
+import { History, MonitorPlay, Search, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -26,49 +26,6 @@ const SkeletonCard = () => (
 
 const skeletonCount = 15;
 
-const HeroSpotlight = ({ video, onClick }) => {
-  if (!video) return null;
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative w-full aspect-[21/9] mb-16 group cursor-pointer overflow-hidden rounded-[2rem] border border-white/[0.08] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)]"
-      onClick={onClick}
-    >
-      <img 
-        src={video.thumbnail} 
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
-        alt={video.title}
-      />
-      {/* Multi-stage gradients for depth */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-black/40" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/80 via-transparent to-transparent" />
-      
-      <div className="absolute bottom-0 left-0 p-12 max-w-3xl z-20">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="px-4 py-1.5 bg-[#007AFF] rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-[0_0_30px_rgba(0,122,255,0.6)]">
-            Studio Feature
-          </div>
-          <div className="px-4 py-1.5 bg-white/10 backdrop-blur-2xl rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white/90 border border-white/10">
-            {video.author.name}
-          </div>
-        </div>
-        <h1 className="text-5xl font-black text-white mb-6 line-clamp-2 leading-[1.05] tracking-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-          {video.title}
-        </h1>
-        <div className="flex items-center gap-6">
-          <button className="px-8 py-4 bg-white text-black rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)]">
-            Begin Experience
-          </button>
-          <div className="flex flex-col">
-            <span className="text-white/80 text-[13px] font-black tracking-tight">{video.views} VIEWS</span>
-            <span className="text-white/40 text-[11px] font-bold uppercase tracking-widest">{video.publishedAt}</span>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
 
 const App = () => {
   const [videos, setVideos] = useState([]);
@@ -78,6 +35,8 @@ const App = () => {
   const [playingVideo, setPlayingVideo] = useState(null);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [isWindowFocused, setIsWindowFocused] = useState(true);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateDownloaded, setUpdateDownloaded] = useState(false);
   
   const searchCache = useRef(new Map());
 
@@ -101,6 +60,15 @@ const App = () => {
   useEffect(() => localStorage.setItem('liked-videos', JSON.stringify(likedVideos)), [likedVideos]);
   useEffect(() => localStorage.setItem('subscriptions', JSON.stringify(subscriptions)), [subscriptions]);
   useEffect(() => localStorage.setItem('watch-history', JSON.stringify(history)), [history]);
+
+  useEffect(() => {
+    const unsubAvailable = window.api?.onUpdateAvailable(() => setUpdateAvailable(true));
+    const unsubDownloaded = window.api?.onUpdateDownloaded(() => setUpdateDownloaded(true));
+    return () => {
+      unsubAvailable?.();
+      unsubDownloaded?.();
+    };
+  }, []);
 
   // --- UTILITIES ---
   const toggleLike = useCallback((video) => {
@@ -143,16 +111,14 @@ const App = () => {
     } else {
        await getAlgorithmFeed();
     }
-    if (playingVideo || currentView !== 'home') {
-      setPlayingVideo(null);
+    if (currentView !== 'home') {
       setCurrentView('home');
-      window.history.pushState({ view: 'home', video: null }, '');
+      window.history.pushState({ view: 'home', video: playingVideo }, '');
     }
   }, [query, playingVideo, currentView, getAlgorithmFeed]);
 
   const handleNavigate = useCallback(async (view) => {
-    if (view === currentView && !playingVideo) return;
-    setPlayingVideo(null);
+    if (view === currentView) return;
     setCurrentView(view);
     setLoading(true);
     if (view === 'home') {
@@ -166,7 +132,7 @@ const App = () => {
       setVideos(results);
       setLoading(false);
     }
-    window.history.pushState({ view, video: null }, '');
+    window.history.pushState({ view, video: playingVideo }, '');
   }, [currentView, playingVideo, getAlgorithmFeed]);
 
   // --- EFFECTS ---
@@ -228,6 +194,11 @@ const App = () => {
   }, []);
 
   const handleVideoClick = useCallback(async (video) => {
+    if (!video) {
+      setPlayingVideo(null);
+      setCurrentView('home');
+      return;
+    }
     window.api.warmVideo(video.id);
     
     let updatedVideo = { ...video };
@@ -246,6 +217,7 @@ const App = () => {
     });
 
     setPlayingVideo(updatedVideo);
+    setCurrentView('watch');
     
     // Fetch full details (description, exact views, etc.) in background
     window.api.getVideoDetails(video.id).then(details => {
@@ -263,7 +235,7 @@ const App = () => {
       }
     });
 
-    window.history.pushState({ view: currentView, video: updatedVideo }, '');
+    window.history.pushState({ view: 'watch', video: updatedVideo }, '');
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentView]);
 
@@ -296,30 +268,7 @@ const App = () => {
   }, [handleLoadMore, currentView]);
 
   return (
-    <div className={`flex h-screen bg-[#050505] text-white overflow-hidden relative font-sans select-none selection:bg-[#007AFF]/30 transition-opacity duration-300 ${isWindowFocused ? "opacity-100" : "opacity-90"}`}>
-      {/* Cinematic Mesh Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-            x: [-100, 100, -100],
-            y: [-50, 50, -50]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-[#007AFF]/20 blur-[120px] rounded-full"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1.2, 1, 1.2],
-            rotate: [90, 0, 90],
-            x: [100, -100, 100],
-            y: [50, -50, 50]
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-[#5856D6]/10 blur-[100px] rounded-full"
-        />
-      </div>
+    <div className={`flex h-screen bg-[#050505] text-white overflow-hidden relative font-sans select-none selection:bg-white/10 transition-opacity duration-300 ${isWindowFocused ? "opacity-100" : "opacity-90"}`}>
 
       <Sidebar 
         playingVideo={playingVideo} 
@@ -327,7 +276,7 @@ const App = () => {
         onNavigate={handleNavigate}
       />
 
-      <main className="flex-1 flex flex-col min-w-0 relative z-10 bg-black/20 backdrop-blur-[2px]">
+      <main className="flex-1 flex flex-col min-w-0 relative z-10 bg-black">
         <Header 
           query={query} 
           setQuery={setQuery} 
@@ -337,138 +286,149 @@ const App = () => {
 
         <div className="flex-1 overflow-y-auto custom-scrollbar relative">
           <AnimatePresence mode="wait">
-            {currentView === 'downloads' ? (
-              <motion.div
-                key="downloads"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="min-h-full"
-              >
-                <DownloadsPage />
-              </motion.div>
-            ) : currentView === 'settings' ? (
-              <motion.div
-                key="settings"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="min-h-full"
-              >
-                <SettingsPage />
-              </motion.div>
-            ) : currentView === 'history' ? (
-              <motion.div
-                key="history"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="px-6 py-6 pb-20 max-w-[1600px] mx-auto"
-              >
-                <div className="mb-8 flex items-center justify-between">
-                  <h2 className="text-2xl font-black text-white/90 tracking-tight">Recent Sessions</h2>
-                  <button 
-                    onClick={() => { setHistory([]); localStorage.removeItem('watch-history'); }}
-                    className="mac-button-secondary !text-[11px] !px-4"
-                  >
-                    Clear History
-                  </button>
-                </div>
-                {history.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-32 text-white/10">
-                     <History size={48} strokeWidth={1} className="mb-4" />
-                     <p className="text-sm font-medium">Your history is clear</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-5 gap-y-10">
-                    {history.map(video => (
-                      <VideoCard 
-                        key={video.id} 
-                        video={video} 
-                        onClick={() => handleVideoClick(video)}
-                        onPrefetch={prefetchVideo}
-                      />
-                    ))}
-                  </div>
-                )}
-              </motion.div>
-            ) : ['home', 'explore', 'subscriptions', 'watchlater', 'liked'].includes(currentView) && !playingVideo ? (
+            {currentView !== 'watch' && (
               <motion.div
                 key={currentView}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="px-8 py-8 pb-20 max-w-[1800px] mx-auto"
-              >
-                {currentView === 'home' && !loading && videos.length > 0 && (
-                  <HeroSpotlight video={videos[0]} onClick={() => handleVideoClick(videos[0])} />
-                )}
-
-                <div className="mb-8 flex items-center justify-between">
-                  <h2 className="text-2xl font-black text-white/90 capitalize tracking-tight">
-                    {currentView === 'home' ? 'Discover for You' : currentView}
-                  </h2>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-6 gap-y-12">
-                  {loading ? (
-                    Array(skeletonCount).fill(0).map((_, i) => (
-                      <SkeletonCard key={i} />
-                    ))
-                  ) : (
-                    videos.slice(currentView === 'home' ? 1 : 0).map(video => (
-                      <VideoCard 
-                        key={`${currentView}-${video.id}`} 
-                        video={video} 
-                        onClick={() => handleVideoClick(video)}
-                        onPrefetch={prefetchVideo}
-                      />
-                    ))
-                  )}
-                </div>
-
-                {!loading && videos.length === 0 && (
-                  <EmptyState 
-                    type={query ? 'search' : 'home'} 
-                    onAction={handleNavigate}
-                  />
-                )}
-
-                <div ref={loadMoreRef} className="h-24 flex items-center justify-center mt-8">
-                  {isLoadingMore && (
-                    <div className="w-6 h-6 border-2 border-white/5 border-t-[#007AFF] rounded-full animate-spin shadow-[0_0_15px_rgba(0,122,255,0.3)]" />
-                  )}
-                </div>
-              </motion.div>
-            ) : playingVideo ? (
-              <motion.div
-                key="watch"
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
+                className="px-8 py-8 pb-32 max-w-[1800px] mx-auto min-h-full"
               >
-                <WatchPage 
-                  playingVideo={playingVideo}
-                  relatedVideos={videos.filter(v => v.id !== playingVideo.id).slice(0, 12)}
-                  onVideoClick={handleVideoClick}
-                  onPrefetch={prefetchVideo}
-                  isTheaterMode={isTheaterMode}
-                  setIsTheaterMode={setIsTheaterMode}
-                  likedVideos={likedVideos}
-                  toggleLike={toggleLike}
-                  subscriptions={subscriptions}
-                  toggleSubscription={toggleSubscription}
-                >
-                  <Player 
-                    videoId={playingVideo.id} 
-                    title={playingVideo.title} 
-                    isTheaterMode={isTheaterMode}
-                    toggleTheater={() => setIsTheaterMode(!isTheaterMode)}
-                  />
-                </WatchPage>
+                {currentView === 'downloads' ? (
+                  <DownloadsPage />
+                ) : currentView === 'settings' ? (
+                  <SettingsPage />
+                ) : currentView === 'history' ? (
+                  <>
+                    <div className="mb-8 flex items-center justify-between">
+                      <h2 className="text-2xl font-black text-white/90 tracking-tight">Recent Sessions</h2>
+                      <button 
+                        onClick={() => { setHistory([]); localStorage.removeItem('watch-history'); }}
+                        className="mac-button-secondary !text-[11px] !px-4"
+                      >
+                        Clear History
+                      </button>
+                    </div>
+                    {history.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-32 text-white/10">
+                         <History size={48} strokeWidth={1} className="mb-4" />
+                         <p className="text-sm font-medium">Your history is clear</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-5 gap-y-10">
+                        {history.map(video => (
+                          <VideoCard 
+                            key={video.id} 
+                            video={video} 
+                            onClick={() => handleVideoClick(video)}
+                            onPrefetch={prefetchVideo}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+
+                    <div className="mb-8 flex items-center justify-between">
+                      <h2 className="text-2xl font-black text-white/90 capitalize tracking-tight">
+                        {currentView === 'home' ? 'Discover for You' : currentView}
+                      </h2>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-6 gap-y-12">
+                      {loading ? (
+                        Array(skeletonCount).fill(0).map((_, i) => (
+                          <SkeletonCard key={i} />
+                        ))
+                      ) : (
+                        videos.map(video => (
+                          <VideoCard 
+                            key={`${currentView}-${video.id}`} 
+                            video={video} 
+                            onClick={() => handleVideoClick(video)}
+                            onPrefetch={prefetchVideo}
+                          />
+                        ))
+                      )}
+                    </div>
+
+                    {!loading && videos.length === 0 && (
+                      <EmptyState 
+                        type={query ? 'search' : 'home'} 
+                        onAction={handleNavigate}
+                      />
+                    )}
+
+                    <div ref={loadMoreRef} className="h-24 flex items-center justify-center mt-8">
+                      {isLoadingMore && (
+                        <div className="w-6 h-6 border-2 border-white/5 border-t-[#007AFF] rounded-full animate-spin shadow-[0_0_15px_rgba(0,122,255,0.3)]" />
+                      )}
+                    </div>
+                  </>
+                )}
               </motion.div>
-            ) : null}
+            )}
+          </AnimatePresence>
+
+          {/* Persistent Watch Page / Player */}
+          {playingVideo && (
+            <motion.div
+              layout
+              layoutId="global-player-container"
+              key="persistent-player"
+              className={currentView === 'watch' 
+                ? "relative z-10 w-full min-h-full bg-black" 
+                : "fixed bottom-10 right-10 w-[400px] aspect-video z-[1000]"
+              }
+            >
+              <WatchPage 
+                playingVideo={playingVideo}
+                relatedVideos={videos.filter(v => v.id !== playingVideo.id).slice(0, 12)}
+                onVideoClick={handleVideoClick}
+                onPrefetch={prefetchVideo}
+                isTheaterMode={isTheaterMode}
+                setIsTheaterMode={setIsTheaterMode}
+                likedVideos={likedVideos}
+                toggleLike={toggleLike}
+                subscriptions={subscriptions}
+                toggleSubscription={toggleSubscription}
+                isMini={currentView !== 'watch'}
+              >
+                <Player 
+                  videoId={playingVideo.id} 
+                  title={playingVideo.title} 
+                  isTheaterMode={isTheaterMode}
+                  toggleTheater={() => setIsTheaterMode(!isTheaterMode)}
+                />
+              </WatchPage>
+            </motion.div>
+          )}
+
+          {/* Update Notification */}
+          <AnimatePresence>
+            {updateDownloaded && (
+              <motion.div 
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 50 }}
+                className="fixed bottom-10 left-10 z-[100] p-1 bg-gradient-to-br from-[#007AFF] to-[#0051FF] rounded-2xl shadow-[0_20px_50px_rgba(0,122,255,0.4)]"
+              >
+                <div className="bg-[#0A0A0A]/90 backdrop-blur-xl rounded-[calc(1rem-2px)] p-4 flex items-center gap-6">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-black text-[#007AFF] uppercase tracking-widest mb-0.5">System Update</span>
+                    <span className="text-[14px] font-bold text-white/90">A new version is ready to install</span>
+                  </div>
+                  <button 
+                    onClick={() => window.api.restartApp()}
+                    className="px-5 py-2.5 bg-[#007AFF] hover:bg-[#0062CC] text-white text-[13px] font-black rounded-xl transition-all shadow-lg active:scale-95"
+                  >
+                    Restart & Install
+                  </button>
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </main>

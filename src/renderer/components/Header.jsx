@@ -1,18 +1,56 @@
 import React from 'react';
-import { Search, MonitorPlay, Bell, User, ChevronLeft, ChevronRight, Command } from 'lucide-react';
+import { Search, MonitorPlay, Bell, User, ChevronLeft, ChevronRight, Command, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Header = ({ query, setQuery, onSearch, onNavigate }) => {
   const [suggestions, setSuggestions] = React.useState([]);
+  const [historyItems, setHistoryItems] = React.useState([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const inputRef = React.useRef(null);
 
+  // Load search history from localStorage
+  React.useEffect(() => {
+    const saved = localStorage.getItem('symphony-search-history');
+    if (saved) {
+      setHistoryItems(JSON.parse(saved));
+    }
+  }, []);
+
+  const saveToHistory = React.useCallback((term) => {
+    if (!term || term.trim().length < 2) return;
+    setHistoryItems(prev => {
+      const filtered = prev.filter(item => item.toLowerCase() !== term.toLowerCase());
+      const next = [term, ...filtered].slice(0, 10);
+      localStorage.setItem('symphony-search-history', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   React.useEffect(() => {
     const fetchSuggestions = async () => {
-      if (query.trim().length > 1) {
-        const results = await window.api.getSuggestions(query);
-        setSuggestions(results);
+      const trimmedQuery = query.trim().toLowerCase();
+      
+      // Filter history based on current query
+      const matchingHistory = trimmedQuery 
+        ? historyItems.filter(item => item.toLowerCase().includes(trimmedQuery))
+        : historyItems;
+
+      if (trimmedQuery.length > 1) {
+        const liveResults = await window.api.getSuggestions(query);
+        // Blend matching history with live results, removing duplicates
+        const blended = [
+          ...matchingHistory.map(text => ({ text, type: 'history' })),
+          ...liveResults
+            .filter(res => !matchingHistory.some(h => h.toLowerCase() === res.toLowerCase()))
+            .map(text => ({ text, type: 'live' }))
+        ].slice(0, 8);
+        
+        setSuggestions(blended);
+        setShowSuggestions(true);
+        setSelectedIndex(-1);
+      } else if (matchingHistory.length > 0 && inputRef.current === document.activeElement) {
+        setSuggestions(matchingHistory.map(text => ({ text, type: 'history' })).slice(0, 8));
         setShowSuggestions(true);
         setSelectedIndex(-1);
       } else {
@@ -23,12 +61,14 @@ const Header = ({ query, setQuery, onSearch, onNavigate }) => {
 
     const timer = setTimeout(fetchSuggestions, 200);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, historyItems]);
 
   const handleSuggestionClick = (suggestion) => {
-    setQuery(suggestion);
+    const term = typeof suggestion === 'string' ? suggestion : suggestion.text;
+    setQuery(term);
     setShowSuggestions(false);
-    onSearch(null, suggestion);
+    saveToHistory(term);
+    onSearch(null, term);
   };
 
   const handleKeyDown = (e) => {
@@ -43,6 +83,7 @@ const Header = ({ query, setQuery, onSearch, onNavigate }) => {
         e.preventDefault();
         handleSuggestionClick(suggestions[selectedIndex]);
       } else {
+        saveToHistory(query);
         onSearch(e);
       }
     } else if (e.key === 'Escape') {
@@ -60,32 +101,31 @@ const Header = ({ query, setQuery, onSearch, onNavigate }) => {
   };
 
   return (
-    <header className="h-14 flex items-center px-6 drag z-[100] sticky top-0 backdrop-blur-2xl bg-black/10 border-b border-white/[0.03]">
-      {/* Left: Navigation Buttons */}
-      <div className="flex items-center gap-4 no-drag min-w-[120px]">
-        <div className="flex items-center gap-1 bg-white/[0.04] p-1 rounded-lg border border-white/[0.05]">
+    <header className="h-16 flex items-center px-6 drag z-[100] sticky top-0 bg-black/80 backdrop-blur-3xl border-b border-white/[0.05]">
+      {/* Left: Branding & Navigation */}
+      <div className="flex items-center gap-6 no-drag min-w-[120px]">
+        <div className="flex items-center gap-2">
           <button 
             onClick={() => window.history.back()}
-            className="p-1.5 hover:bg-white/5 rounded-md transition-all text-white/30 hover:text-white/90 active:scale-90"
+            className="p-2 hover:bg-white/5 rounded-full transition-all text-white/40 hover:text-white"
           >
-            <ChevronLeft size={16} strokeWidth={3} />
+            <ChevronLeft size={20} />
           </button>
           <button 
             onClick={() => window.history.forward()}
-            className="p-1.5 hover:bg-white/5 rounded-md transition-all text-white/30 hover:text-white/90 active:scale-90"
+            className="p-2 hover:bg-white/5 rounded-full transition-all text-white/40 hover:text-white"
           >
-            <ChevronRight size={16} strokeWidth={3} />
+            <ChevronRight size={20} />
           </button>
         </div>
       </div>
 
       {/* Center: Search Bar */}
       <div className="flex-1 flex justify-center no-drag">
-        <div className="w-full max-w-[540px] relative group no-drag">
-          <div className={`absolute -inset-[1px] bg-gradient-to-r from-[#007AFF]/50 to-[#5856D6]/50 rounded-[1.25rem] opacity-0 transition-opacity duration-500 blur-[2px] ${showSuggestions ? 'opacity-100' : 'group-focus-within:opacity-40'}`} />
-          <div className="relative flex items-center">
+        <div className="w-full max-w-[640px] relative no-drag">
+          <div className="relative flex items-center group">
             <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-              <Search size={14} className="text-white/20 group-focus-within:text-[#007AFF] transition-colors" />
+              <Search size={16} className="text-white/20 group-focus-within:text-white transition-colors" />
             </div>
             <input
               ref={inputRef}
@@ -95,25 +135,18 @@ const Header = ({ query, setQuery, onSearch, onNavigate }) => {
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search Symphony Studio..."
-              className="w-full bg-[#0A0A0A]/80 border border-white/[0.08] rounded-[1.1rem] py-2.5 pl-12 pr-12 text-[14px] font-black tracking-tight focus:outline-none focus:bg-black/90 focus:border-[#007AFF]/40 focus:ring-8 focus:ring-[#007AFF]/5 transition-all placeholder:text-white/20 text-white/90 backdrop-blur-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.02)]"
+              placeholder="Search videos..."
+              className="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-12 pr-12 text-[15px] font-medium focus:outline-none focus:bg-white/10 focus:border-white/20 transition-all placeholder:text-white/20 text-white"
             />
             
-            <div className="absolute inset-y-0 right-4 flex items-center gap-2">
-              {query ? (
+            <div className="absolute inset-y-0 right-4 flex items-center">
+              {query && (
                 <button 
                   onClick={handleClear}
-                  className="text-white/20 hover:text-white/60 transition-colors"
+                  className="text-white/40 hover:text-white transition-colors p-1"
                 >
-                  <div className="w-5 h-5 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">
-                    <span className="text-[10px] font-black">✕</span>
-                  </div>
+                  <span className="text-[12px]">✕</span>
                 </button>
-              ) : (
-                <div className="flex items-center gap-1 px-2 py-1 rounded-lg border border-white/5 bg-white/[0.02] opacity-40">
-                  <Command size={10} />
-                  <span className="text-[10px] font-bold">K</span>
-                </div>
               )}
             </div>
           </div>
@@ -122,33 +155,27 @@ const Header = ({ query, setQuery, onSearch, onNavigate }) => {
           <AnimatePresence>
             {showSuggestions && (
               <motion.div 
-                initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 12, scale: 0.98 }}
-                className="absolute top-full left-0 right-0 mt-4 bg-[#0A0A0A]/90 backdrop-blur-[40px] border border-white/[0.08] rounded-[2.2rem] shadow-[0_40px_80px_-15px_rgba(0,0,0,0.8),0_0_20px_rgba(0,122,255,0.05)] overflow-hidden py-3 z-[200] p-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute top-full left-0 right-0 mt-2 bg-[#121212] border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2 z-[200]"
               >
-                <div className="px-6 py-2 mb-2">
-                  <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.25em]">Quick Search</span>
-                </div>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {suggestions.map((s, i) => (
                     <button
                       key={i}
                       onMouseEnter={() => setSelectedIndex(i)}
                       onClick={() => handleSuggestionClick(s)}
-                      className={`w-full text-left px-5 py-3.5 rounded-[1.4rem] text-[14px] font-black flex items-center justify-between group/item transition-all ${
-                        selectedIndex === i 
-                          ? 'bg-[#007AFF] text-white shadow-[0_10px_20px_rgba(0,122,255,0.3)]' 
-                          : 'text-white/40 hover:bg-white/5 hover:text-white/80'
+                      className={`w-full text-left px-5 py-3 text-[14px] font-medium flex items-center gap-4 transition-colors ${
+                        selectedIndex === i ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5'
                       }`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${selectedIndex === i ? 'bg-white/20' : 'bg-white/5 text-white/20'}`}>
-                          <Search size={14} strokeWidth={3} />
-                        </div>
-                        <span className="truncate tracking-tight">{s}</span>
-                      </div>
-                      <ChevronRight size={14} className={`opacity-0 group-hover/item:opacity-40 transition-all ${selectedIndex === i ? 'text-white !opacity-100' : '-translate-x-2'}`} />
+                      {s.type === 'history' ? (
+                        <History size={16} className="text-white/20" />
+                      ) : (
+                        <Search size={16} className="text-white/20" />
+                      )}
+                      <span className="truncate">{s.text}</span>
                     </button>
                   ))}
                 </div>

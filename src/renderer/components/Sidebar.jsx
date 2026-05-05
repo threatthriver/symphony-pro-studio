@@ -20,8 +20,8 @@ const NavItem = React.memo(({ icon, label, active, onClick, collapsed }) => (
       />
     )}
     
-    <div className={`flex-shrink-0 z-10 transition-all duration-300 ${active ? 'text-[#007AFF] scale-110 drop-shadow-[0_0_8px_rgba(0,122,255,0.4)]' : 'group-hover:text-white/60'}`}>
-      {React.cloneElement(icon, { size: 18, strokeWidth: active ? 2.5 : 2 })}
+    <div className={`flex-shrink-0 z-10 transition-all duration-300 ${active ? 'text-white' : 'text-white/40 group-hover:text-white/60'}`}>
+      {React.cloneElement(icon, { size: 18, strokeWidth: 2 })}
     </div>
     
     <AnimatePresence>
@@ -58,13 +58,10 @@ const Sidebar = ({ playingVideo, currentView, onNavigate }) => {
     <motion.aside 
       initial={false}
       animate={{ 
-        width: isCollapsed ? 76 : 260,
-        backgroundColor: isCollapsed ? 'rgba(5,5,5,0.6)' : 'rgba(5,5,5,0.4)'
+        width: isCollapsed ? 76 : 240
       }}
-      className="backdrop-blur-3xl pt-16 flex flex-col no-drag border-r border-white/[0.05] z-40 relative h-screen transition-colors duration-500 overflow-hidden"
+      className="bg-[#0A0A0A] pt-16 flex flex-col no-drag border-r border-white/[0.05] z-40 relative h-screen transition-all duration-300 overflow-hidden"
     >
-      {/* Subtle Background Glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#007AFF]/[0.02] to-transparent pointer-events-none" />
       
       <div className="flex-1 space-y-10 px-3 relative z-10">
         <div>

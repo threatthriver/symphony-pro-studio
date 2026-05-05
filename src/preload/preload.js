@@ -27,5 +27,33 @@ contextBridge.exposeInMainWorld('api', {
     const handler = (event, data) => callback(data);
     ipcRenderer.on('download-status-update', handler);
     return () => ipcRenderer.removeListener('download-status-update', handler);
+  },
+  // Update System
+  onUpdateAvailable: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('update_available', handler);
+    return () => ipcRenderer.removeListener('update_available', handler);
+  },
+  onUpdateDownloaded: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('update_downloaded', handler);
+    return () => ipcRenderer.removeListener('update_downloaded', handler);
+  },
+  restartApp: () => ipcRenderer.send('restart_app'),
+  // Media Keys
+  onMediaPlayPause: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('media-play-pause', handler);
+    return () => ipcRenderer.removeListener('media-play-pause', handler);
+  },
+  onMediaNext: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('media-next', handler);
+    return () => ipcRenderer.removeListener('media-next', handler);
+  },
+  onMediaPrev: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('media-prev', handler);
+    return () => ipcRenderer.removeListener('media-prev', handler);
   }
 });
