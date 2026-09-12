@@ -63,6 +63,7 @@ export const LibraryScreen: React.FC = () => {
       {/* Title */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Your Library</Text>
+        <Text style={styles.headerSubtitle}>SAVED TRACKS & OFFLINE CACHE</Text>
       </View>
 
       {/* Tabs */}
@@ -72,9 +73,9 @@ export const LibraryScreen: React.FC = () => {
           onPress={() => setActiveTab('liked')}
         >
           <Heart
-            size={16}
-            color={activeTab === 'liked' ? '#FF0000' : '#888888'}
-            fill={activeTab === 'liked' ? '#FF0000' : 'transparent'}
+            size={15}
+            color={activeTab === 'liked' ? '#FFFFFF' : '#8E8E9F'}
+            fill={activeTab === 'liked' ? '#FFFFFF' : 'transparent'}
           />
           <Text
             style={[styles.tabText, activeTab === 'liked' && styles.activeTabText]}
@@ -91,8 +92,8 @@ export const LibraryScreen: React.FC = () => {
           onPress={() => setActiveTab('history')}
         >
           <Clock
-            size={16}
-            color={activeTab === 'history' ? '#FFFFFF' : '#888888'}
+            size={15}
+            color={activeTab === 'history' ? '#FFFFFF' : '#8E8E9F'}
           />
           <Text
             style={[
@@ -112,8 +113,8 @@ export const LibraryScreen: React.FC = () => {
           onPress={() => setActiveTab('downloads')}
         >
           <Download
-            size={16}
-            color={activeTab === 'downloads' ? '#FFFFFF' : '#888888'}
+            size={15}
+            color={activeTab === 'downloads' ? '#FFFFFF' : '#8E8E9F'}
           />
           <Text
             style={[
@@ -134,7 +135,7 @@ export const LibraryScreen: React.FC = () => {
             onPress={handlePlayAll}
             activeOpacity={0.8}
           >
-            <Play size={16} color="#000000" fill="#000000" />
+            <Play size={15} color="#FFFFFF" fill="#FFFFFF" />
             <Text style={styles.actionPillText}>Play All</Text>
           </TouchableOpacity>
 
@@ -143,7 +144,7 @@ export const LibraryScreen: React.FC = () => {
             onPress={handleShuffleAll}
             activeOpacity={0.8}
           >
-            <Shuffle size={16} color="#FFFFFF" />
+            <Shuffle size={15} color="#C4C4D4" />
             <Text style={styles.actionPillTextSecondary}>Shuffle</Text>
           </TouchableOpacity>
         </View>
@@ -161,10 +162,10 @@ export const LibraryScreen: React.FC = () => {
           </Text>
           <Text style={styles.emptySubtitle}>
             {activeTab === 'liked'
-              ? 'Tap the heart icon on any song to save it here.'
+              ? 'Tap the heart icon on any song to save it to your studio favorites.'
               : activeTab === 'downloads'
-              ? 'Download songs from the options menu for offline playback.'
-              : 'Songs you play will appear here.'}
+              ? 'Download songs from the options menu for seamless offline playback.'
+              : 'Songs you stream will appear here automatically.'}
           </Text>
         </View>
       ) : (
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#030303',
+    backgroundColor: '#08080A',
   },
   header: {
     paddingHorizontal: 20,
@@ -208,6 +209,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 26,
     fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    color: '#6A6A7D',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginTop: 2,
   },
   tabBar: {
     flexDirection: 'row',
@@ -217,17 +226,20 @@ const styles = StyleSheet.create({
   tabButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#14141E',
+    borderWidth: 1,
+    borderColor: '#242434',
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 18,
     marginRight: 8,
   },
   activeTabButton: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#FF1E44',
+    borderColor: '#FF1E44',
   },
   tabText: {
-    color: '#888888',
+    color: '#8E8E9F',
     fontSize: 13,
     fontWeight: '600',
     marginLeft: 6,
@@ -238,34 +250,41 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    marginVertical: 12,
+    marginVertical: 10,
   },
   actionPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FF1E44',
     paddingHorizontal: 18,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 20,
     marginRight: 10,
+    shadowColor: '#FF1E44',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
   actionPillText: {
-    color: '#000000',
-    fontSize: 14,
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '700',
     marginLeft: 6,
   },
   actionPillSecondary: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#262626',
+    backgroundColor: '#161622',
+    borderWidth: 1,
+    borderColor: '#262638',
     paddingHorizontal: 18,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 20,
   },
   actionPillTextSecondary: {
-    color: '#FFFFFF',
-    fontSize: 14,
+    color: '#C4C4D4',
+    fontSize: 13,
     fontWeight: '600',
     marginLeft: 6,
   },
@@ -284,7 +303,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   emptySubtitle: {
-    color: '#888888',
+    color: '#8E8E9F',
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',

@@ -22,7 +22,7 @@ const POPULAR_SEARCHES = [
   'Taylor Swift',
   'Linkin Park',
   'Coldplay',
-  'Lofi Hip Hop',
+  'Lofi Beats',
 ];
 
 export const SearchScreen: React.FC = () => {
@@ -60,11 +60,11 @@ export const SearchScreen: React.FC = () => {
       {/* Search Input Bar */}
       <View style={styles.searchBarContainer}>
         <View style={styles.inputWrapper}>
-          <Search size={20} color="#888888" style={styles.searchIcon} />
+          <Search size={18} color="#6A6A7D" style={styles.searchIcon} />
           <TextInput
             style={styles.input}
             placeholder="Search songs, artists, albums..."
-            placeholderTextColor="#888888"
+            placeholderTextColor="#6A6A7D"
             value={query}
             onChangeText={setQuery}
             onSubmitEditing={() => handleSearch(query)}
@@ -73,7 +73,7 @@ export const SearchScreen: React.FC = () => {
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-              <X size={18} color="#888888" />
+              <X size={16} color="#8E8E9F" />
             </TouchableOpacity>
           )}
         </View>
@@ -82,8 +82,8 @@ export const SearchScreen: React.FC = () => {
       {/* Content Area */}
       {loading ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#FF0000" />
-          <Text style={styles.loaderText}>Searching YouTube via yt-dlp...</Text>
+          <ActivityIndicator size="large" color="#FF1E44" />
+          <Text style={styles.loaderText}>Searching Symphony Cloud Catalog...</Text>
         </View>
       ) : results.length > 0 ? (
         <FlatList
@@ -106,13 +106,13 @@ export const SearchScreen: React.FC = () => {
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyTitle}>No results found</Text>
           <Text style={styles.emptySubtitle}>
-            Try searching with different song keywords or artist names.
+            Try searching with different keywords, track titles, or artist names.
           </Text>
         </View>
       ) : (
         <View style={styles.suggestionsContainer}>
           <View style={styles.suggestionsHeader}>
-            <TrendingUp size={16} color="#FF0000" />
+            <TrendingUp size={16} color="#FF1E44" />
             <Text style={styles.suggestionsTitle}>Popular Searches</Text>
           </View>
 
@@ -126,7 +126,7 @@ export const SearchScreen: React.FC = () => {
                   handleSearch(item);
                 }}
               >
-                <Search size={14} color="#AAAAAA" />
+                <Search size={13} color="#8E8E9F" />
                 <Text style={styles.suggestionText}>{item}</Text>
               </TouchableOpacity>
             ))}
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#030303',
+    backgroundColor: '#08080A',
   },
   searchBarContainer: {
     paddingHorizontal: 16,
@@ -155,8 +155,10 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#212121',
-    borderRadius: 24,
+    backgroundColor: '#14141C',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#262636',
     paddingHorizontal: 14,
     height: 48,
   },
@@ -166,7 +168,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     paddingVertical: 0,
   },
   clearButton: {
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loaderText: {
-    color: '#888888',
+    color: '#8E8E9F',
     fontSize: 14,
     marginTop: 14,
   },
@@ -197,7 +199,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   emptySubtitle: {
-    color: '#888888',
+    color: '#8E8E9F',
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
   },
   suggestionsTitle: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     marginLeft: 8,
   },
@@ -223,16 +225,19 @@ const styles = StyleSheet.create({
   suggestionChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#161622',
+    borderWidth: 1,
+    borderColor: '#262638',
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingVertical: 9,
+    borderRadius: 18,
     marginRight: 10,
     marginBottom: 10,
   },
   suggestionText: {
-    color: '#E0E0E0',
-    fontSize: 14,
+    color: '#C4C4D4',
+    fontSize: 13,
+    fontWeight: '500',
     marginLeft: 8,
   },
 });

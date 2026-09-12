@@ -10,6 +10,7 @@ import {
   ScrollView,
   StatusBar,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -37,6 +38,7 @@ export const FullPlayerModal: React.FC = () => {
   const {
     currentTrack,
     isPlaying,
+    isLoading,
     currentTime,
     duration,
     isShuffle,
@@ -109,13 +111,13 @@ export const FullPlayerModal: React.FC = () => {
             style={styles.headerButton}
             onPress={() => setFullPlayerVisible(false)}
           >
-            <ChevronDown size={28} color="#FFFFFF" />
+            <ChevronDown size={26} color="#FFFFFF" />
           </TouchableOpacity>
 
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerSubtitle}>PLAYING FROM</Text>
             <Text style={styles.headerTitle} numberOfLines={1}>
-              YouTube Music
+              Symphony Cloud Stream
             </Text>
           </View>
 
@@ -123,7 +125,7 @@ export const FullPlayerModal: React.FC = () => {
             style={styles.headerButton}
             onPress={() => setQueueVisible(true)}
           >
-            <ListMusic size={24} color="#FFFFFF" />
+            <ListMusic size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
@@ -144,7 +146,7 @@ export const FullPlayerModal: React.FC = () => {
             <View style={styles.lyricsContainer}>
               <Text style={styles.lyricsTitle}>Lyrics</Text>
               <Text style={styles.lyricsBody}>
-                {`♪ ${currentTrack.title} ♪\n\nBy ${currentTrack.artist}\n\n[Music Playing]\n\nStreamed via yt-dlp audio engine\nEnjoy seamless high fidelity playback.`}
+                {`♪ ${currentTrack.title} ♪\n\nBy ${currentTrack.artist}\n\n[Music Playing]\n\nStreamed via Symphony Cloud Audio Engine\nEnjoy seamless high fidelity playback.`}
               </Text>
             </View>
           )}
@@ -165,9 +167,9 @@ export const FullPlayerModal: React.FC = () => {
               onPress={() => toggleLike(currentTrack)}
             >
               <Heart
-                size={28}
-                color={isLiked ? '#FF0000' : '#FFFFFF'}
-                fill={isLiked ? '#FF0000' : 'transparent'}
+                size={26}
+                color={isLiked ? '#FF1E44' : '#8E8E9F'}
+                fill={isLiked ? '#FF1E44' : 'transparent'}
               />
             </TouchableOpacity>
           </View>
@@ -205,8 +207,8 @@ export const FullPlayerModal: React.FC = () => {
               onPress={toggleShuffle}
             >
               <Shuffle
-                size={22}
-                color={isShuffle ? '#FF0000' : '#888888'}
+                size={20}
+                color={isShuffle ? '#FF1E44' : '#6A6A7D'}
               />
             </TouchableOpacity>
 
@@ -215,19 +217,22 @@ export const FullPlayerModal: React.FC = () => {
               style={styles.controlButton}
               onPress={skipToPrevious}
             >
-              <SkipBack size={32} color="#FFFFFF" fill="#FFFFFF" />
+              <SkipBack size={30} color="#FFFFFF" fill="#FFFFFF" />
             </TouchableOpacity>
 
-            {/* Play/Pause Button */}
+            {/* Play/Pause Button with Spinner */}
             <TouchableOpacity
               style={styles.playPauseButton}
               onPress={togglePlayPause}
               activeOpacity={0.8}
+              disabled={isLoading}
             >
-              {isPlaying ? (
-                <Pause size={36} color="#000000" fill="#000000" />
+              {isLoading ? (
+                <ActivityIndicator size="large" color="#FFFFFF" />
+              ) : isPlaying ? (
+                <Pause size={34} color="#FFFFFF" fill="#FFFFFF" />
               ) : (
-                <Play size={36} color="#000000" fill="#000000" style={styles.playIconOffset} />
+                <Play size={34} color="#FFFFFF" fill="#FFFFFF" style={styles.playIconOffset} />
               )}
             </TouchableOpacity>
 
@@ -236,7 +241,7 @@ export const FullPlayerModal: React.FC = () => {
               style={styles.controlButton}
               onPress={skipToNext}
             >
-              <SkipForward size={32} color="#FFFFFF" fill="#FFFFFF" />
+              <SkipForward size={30} color="#FFFFFF" fill="#FFFFFF" />
             </TouchableOpacity>
 
             {/* Repeat */}
@@ -245,11 +250,11 @@ export const FullPlayerModal: React.FC = () => {
               onPress={toggleRepeat}
             >
               {repeatMode === 'one' ? (
-                <Repeat1 size={22} color="#FF0000" />
+                <Repeat1 size={22} color="#FF1E44" />
               ) : (
                 <Repeat
-                  size={22}
-                  color={repeatMode === 'all' ? '#FF0000' : '#888888'}
+                  size={20}
+                  color={repeatMode === 'all' ? '#FF1E44' : '#6A6A7D'}
                 />
               )}
             </TouchableOpacity>
@@ -261,7 +266,7 @@ export const FullPlayerModal: React.FC = () => {
               style={styles.bottomActionItem}
               onPress={() => setShowLyrics(!showLyrics)}
             >
-              <FileText size={20} color={showLyrics ? '#FF0000' : '#AAAAAA'} />
+              <FileText size={18} color={showLyrics ? '#FF1E44' : '#8E8E9F'} />
               <Text
                 style={[
                   styles.bottomActionText,
@@ -278,8 +283,8 @@ export const FullPlayerModal: React.FC = () => {
               disabled={isDownloading}
             >
               <Download
-                size={20}
-                color={downloadSuccess ? '#00FF66' : isDownloading ? '#FF8800' : '#AAAAAA'}
+                size={18}
+                color={downloadSuccess ? '#00E599' : isDownloading ? '#FFA028' : '#8E8E9F'}
               />
               <Text
                 style={[
@@ -299,7 +304,7 @@ export const FullPlayerModal: React.FC = () => {
               style={styles.bottomActionItem}
               onPress={() => setQueueVisible(true)}
             >
-              <ListMusic size={20} color="#AAAAAA" />
+              <ListMusic size={18} color="#8E8E9F" />
               <Text style={styles.bottomActionText}>Up Next</Text>
             </TouchableOpacity>
           </View>
@@ -312,7 +317,7 @@ export const FullPlayerModal: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#08080A',
   },
   header: {
     flexDirection: 'row',
@@ -328,10 +333,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerSubtitle: {
-    color: '#888888',
+    color: '#6A6A7D',
     fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   headerTitle: {
     color: '#FFFFFF',
@@ -346,38 +351,43 @@ const styles = StyleSheet.create({
   },
   artworkContainer: {
     marginTop: 16,
-    marginBottom: 24,
+    marginBottom: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 15,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    elevation: 18,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#222230',
+    overflow: 'hidden',
   },
   artwork: {
     width: ARTWORK_SIZE,
     height: ARTWORK_SIZE,
-    borderRadius: 16,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#14141E',
   },
   lyricsContainer: {
     width: ARTWORK_SIZE,
     height: ARTWORK_SIZE,
-    borderRadius: 16,
-    backgroundColor: '#1A1A1A',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#222230',
+    backgroundColor: '#12121A',
     padding: 24,
     marginTop: 16,
-    marginBottom: 24,
+    marginBottom: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
   lyricsTitle: {
-    color: '#FF0000',
+    color: '#FF1E44',
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 16,
   },
   lyricsBody: {
-    color: '#E0E0E0',
+    color: '#D4D4E0',
     fontSize: 15,
     lineHeight: 24,
     textAlign: 'center',
@@ -386,7 +396,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 22,
   },
   titleArtistContainer: {
     flex: 1,
@@ -394,12 +404,12 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: '700',
     letterSpacing: 0.2,
   },
   artist: {
-    color: '#AAAAAA',
+    color: '#8E8E9F',
     fontSize: 15,
     marginTop: 4,
   },
@@ -408,7 +418,7 @@ const styles = StyleSheet.create({
   },
   seekContainer: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: 26,
   },
   progressBarTouchArea: {
     height: 30,
@@ -416,13 +426,13 @@ const styles = StyleSheet.create({
   },
   progressBarTrack: {
     height: 4,
-    backgroundColor: '#333333',
+    backgroundColor: '#20202C',
     borderRadius: 2,
     position: 'relative',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FF1E44',
     borderRadius: 2,
   },
   progressKnob: {
@@ -433,6 +443,8 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     backgroundColor: '#FFFFFF',
+    borderWidth: 3,
+    borderColor: '#FF1E44',
   },
   timeRow: {
     flexDirection: 'row',
@@ -440,8 +452,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   timeText: {
-    color: '#888888',
+    color: '#6A6A7D',
     fontSize: 12,
+    fontWeight: '500',
   },
   controlsRow: {
     flexDirection: 'row',
@@ -458,14 +471,14 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FF1E44',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#FFF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowColor: '#FF1E44',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    elevation: 10,
   },
   bottomActionsRow: {
     flexDirection: 'row',
@@ -473,25 +486,25 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#222222',
+    borderTopColor: '#1A1A24',
   },
   bottomActionItem: {
     alignItems: 'center',
     padding: 8,
   },
   bottomActionText: {
-    color: '#AAAAAA',
+    color: '#8E8E9F',
     fontSize: 12,
     marginTop: 6,
     fontWeight: '500',
   },
   bottomActionTextActive: {
-    color: '#FF0000',
+    color: '#FF1E44',
   },
   bottomActionTextSuccess: {
-    color: '#00FF66',
+    color: '#00E599',
   },
   playIconOffset: {
-    marginLeft: 4,
+    marginLeft: 3,
   },
 });

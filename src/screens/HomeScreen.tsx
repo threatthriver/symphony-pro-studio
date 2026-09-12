@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import { Play, Sparkles, Flame, Radio, Wifi, WifiOff } from 'lucide-react-native';
+import { Play, Sparkles, Flame, Radio, WifiOff } from 'lucide-react-native';
 import { Track } from '../types';
 import { api } from '../services/api';
 import { usePlayer } from '../context/PlayerContext';
@@ -80,9 +80,12 @@ export const HomeScreen: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.logoRow}>
           <View style={styles.logoIcon}>
-            <Play size={16} color="#FFFFFF" fill="#FFFFFF" />
+            <Play size={15} color="#FFFFFF" fill="#FFFFFF" />
           </View>
-          <Text style={styles.logoText}>Music</Text>
+          <Text style={styles.logoText}>Symphony</Text>
+          <View style={styles.proBadge}>
+            <Text style={styles.proBadgeText}>PRO</Text>
+          </View>
         </View>
 
         {/* Server status badge */}
@@ -94,11 +97,12 @@ export const HomeScreen: React.FC = () => {
               : styles.serverOffline,
           ]}
           onPress={refreshServerStatus}
+          activeOpacity={0.8}
         >
           {serverConfig.isConnected ? (
-            <Wifi size={12} color="#00FF66" />
+            <View style={styles.onlineDot} />
           ) : (
-            <WifiOff size={12} color="#FF6666" />
+            <WifiOff size={11} color="#FF5252" />
           )}
           <Text
             style={[
@@ -108,7 +112,7 @@ export const HomeScreen: React.FC = () => {
                 : styles.serverOfflineText,
             ]}
           >
-            {serverConfig.isConnected ? 'yt-dlp Ready' : 'Connecting...'}
+            {serverConfig.isConnected ? '24/7 Cloud' : 'Offline'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -227,7 +231,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#030303',
+    backgroundColor: '#08080A',
   },
   header: {
     flexDirection: 'row',
@@ -235,7 +239,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 12,
+    paddingBottom: 14,
   },
   logoRow: {
     flexDirection: 'row',
@@ -245,113 +249,159 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#FF1E44',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
+    shadowColor: '#FF1E44',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
   },
   logoText: {
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '800',
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
+  },
+  proBadge: {
+    backgroundColor: '#1E1E28',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 6,
+    borderWidth: 1,
+    borderColor: '#303042',
+  },
+  proBadgeText: {
+    color: '#FF1E44',
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   serverBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
   },
   serverOnline: {
-    backgroundColor: 'rgba(0, 255, 102, 0.12)',
+    backgroundColor: 'rgba(0, 230, 118, 0.08)',
+    borderColor: 'rgba(0, 230, 118, 0.25)',
   },
   serverOffline: {
-    backgroundColor: 'rgba(255, 68, 68, 0.12)',
+    backgroundColor: 'rgba(255, 68, 68, 0.08)',
+    borderColor: 'rgba(255, 68, 68, 0.25)',
+  },
+  onlineDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#00E676',
+    shadowColor: '#00E676',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 2,
   },
   serverBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    marginLeft: 5,
+    marginLeft: 6,
+    letterSpacing: 0.2,
   },
   serverOnlineText: {
-    color: '#00FF66',
+    color: '#00E676',
   },
   serverOfflineText: {
-    color: '#FF6666',
+    color: '#FF5252',
   },
   filterContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   filterChip: {
-    backgroundColor: '#1F1F1F',
+    backgroundColor: '#14141C',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#2A2A2A',
+    borderColor: '#242432',
   },
   filterChipSelected: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#FFFFFF',
+    backgroundColor: '#FF1E44',
+    borderColor: '#FF1E44',
+    shadowColor: '#FF1E44',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 3,
   },
   filterChipText: {
-    color: '#E0E0E0',
+    color: '#A0A0B2',
     fontSize: 13,
     fontWeight: '600',
   },
   filterChipTextSelected: {
-    color: '#000000',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   section: {
-    marginTop: 24,
+    marginTop: 26,
   },
   sectionHeader: {
     paddingHorizontal: 20,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   sectionSubtitle: {
-    color: '#888888',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1,
+    color: '#FF1E44',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
   },
   sectionTitle: {
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '700',
     marginTop: 2,
+    letterSpacing: -0.3,
   },
   quickPicksList: {
     paddingHorizontal: 16,
   },
   quickPickCard: {
     width: QUICK_PICK_WIDTH,
-    marginHorizontal: 4,
+    marginHorizontal: 5,
   },
   quickPickArtworkWrapper: {
     position: 'relative',
-    borderRadius: 8,
+    borderRadius: 14,
     overflow: 'hidden',
-    backgroundColor: '#181818',
+    backgroundColor: '#161620',
+    borderWidth: 1,
+    borderColor: '#242432',
   },
   quickPickArtwork: {
     width: QUICK_PICK_WIDTH,
     height: QUICK_PICK_WIDTH,
-    borderRadius: 8,
+    borderRadius: 13,
   },
   quickPickPlayOverlay: {
     position: 'absolute',
     bottom: 8,
     right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(10, 10, 14, 0.82)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   quickPickTitle: {
     color: '#FFFFFF',
@@ -360,18 +410,19 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   quickPickArtist: {
-    color: '#888888',
+    color: '#8E8E9F',
     fontSize: 12,
     marginTop: 2,
   },
   loaderContainer: {
-    paddingVertical: 60,
+    paddingVertical: 70,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loaderText: {
-    color: '#888888',
-    fontSize: 14,
-    marginTop: 12,
+    color: '#8E8E9F',
+    fontSize: 13,
+    marginTop: 14,
+    letterSpacing: 0.2,
   },
 });

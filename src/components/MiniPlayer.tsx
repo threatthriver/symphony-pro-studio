@@ -5,6 +5,7 @@ import {
   Text,
   Image,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { Play, Pause, SkipForward } from 'lucide-react-native';
 import { usePlayer } from '../context/PlayerContext';
@@ -13,6 +14,7 @@ export const MiniPlayer: React.FC = () => {
   const {
     currentTrack,
     isPlaying,
+    isLoading,
     currentTime,
     duration,
     togglePlayPause,
@@ -26,7 +28,7 @@ export const MiniPlayer: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Progress Bar Top Border */}
+      {/* Progress Bar Top Accent */}
       <View style={styles.progressBarBackground}>
         <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
       </View>
@@ -38,11 +40,13 @@ export const MiniPlayer: React.FC = () => {
           onPress={() => setFullPlayerVisible(true)}
           activeOpacity={0.8}
         >
-          <Image
-            source={{ uri: currentTrack.thumbnail }}
-            style={styles.thumbnail}
-            resizeMode="cover"
-          />
+          <View style={styles.thumbnailWrapper}>
+            <Image
+              source={{ uri: currentTrack.thumbnail }}
+              style={styles.thumbnail}
+              resizeMode="cover"
+            />
+          </View>
 
           <View style={styles.trackInfo}>
             <Text style={styles.title} numberOfLines={1}>
@@ -57,23 +61,26 @@ export const MiniPlayer: React.FC = () => {
         {/* Action Buttons */}
         <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.playButton}
             onPress={togglePlayPause}
             activeOpacity={0.7}
+            disabled={isLoading}
           >
-            {isPlaying ? (
-              <Pause size={22} color="#FFFFFF" />
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#FF1E44" />
+            ) : isPlaying ? (
+              <Pause size={18} color="#FFFFFF" fill="#FFFFFF" />
             ) : (
-              <Play size={22} color="#FFFFFF" fill="#FFFFFF" />
+              <Play size={18} color="#FFFFFF" fill="#FFFFFF" style={styles.playIconOffset} />
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.actionButton}
+            style={styles.skipButton}
             onPress={skipToNext}
             activeOpacity={0.7}
           >
-            <SkipForward size={22} color="#FFFFFF" />
+            <SkipForward size={20} color="#C4C4D4" />
           </TouchableOpacity>
         </View>
       </View>
@@ -83,38 +90,49 @@ export const MiniPlayer: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#212121',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    marginHorizontal: 8,
-    marginBottom: 4,
+    backgroundColor: '#121218',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#262634',
+    marginHorizontal: 12,
+    marginBottom: 8,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 5,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    elevation: 12,
   },
   progressBarBackground: {
     height: 2.5,
-    backgroundColor: '#383838',
+    backgroundColor: '#20202C',
     width: '100%',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#FF0000',
+    backgroundColor: '#FF1E44',
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 9,
     paddingHorizontal: 12,
+  },
+  trackTouchable: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  thumbnailWrapper: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2A2A38',
+    overflow: 'hidden',
   },
   thumbnail: {
     width: 44,
     height: 44,
-    borderRadius: 6,
-    backgroundColor: '#111111',
+    backgroundColor: '#171720',
   },
   trackInfo: {
     flex: 1,
@@ -126,24 +144,34 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   artist: {
-    color: '#AAAAAA',
+    color: '#8E8E9F',
     fontSize: 12,
     marginTop: 2,
+    fontWeight: '400',
   },
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  actionButton: {
-    padding: 8,
+  playButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1E1E28',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#2F2F40',
     marginLeft: 4,
   },
-  trackTouchable: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+  playIconOffset: {
+    marginLeft: 2,
+  },
+  skipButton: {
+    padding: 8,
+    marginLeft: 4,
   },
 });

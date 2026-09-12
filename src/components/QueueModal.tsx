@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronDown, X, Music } from 'lucide-react-native';
+import { ChevronDown, X, Volume2 } from 'lucide-react-native';
 import { usePlayer } from '../context/PlayerContext';
 
 export const QueueModal: React.FC = () => {
@@ -49,12 +49,14 @@ export const QueueModal: React.FC = () => {
             <ChevronDown size={26} color="#FFFFFF" />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Queue</Text>
+          <Text style={styles.headerTitle}>Up Next Queue</Text>
 
-          {queue.length > 1 && (
+          {queue.length > 1 ? (
             <TouchableOpacity style={styles.clearButton} onPress={clearQueue}>
-              <Text style={styles.clearButtonText}>Clear</Text>
+              <Text style={styles.clearButtonText}>Clear All</Text>
             </TouchableOpacity>
+          ) : (
+            <View style={styles.headerSpacer} />
           )}
         </View>
 
@@ -63,10 +65,12 @@ export const QueueModal: React.FC = () => {
           <View style={styles.nowPlayingSection}>
             <Text style={styles.sectionHeader}>NOW PLAYING</Text>
             <View style={styles.nowPlayingCard}>
-              <Image
-                source={{ uri: currentTrack.thumbnail }}
-                style={styles.nowPlayingThumbnail}
-              />
+              <View style={styles.nowPlayingThumbWrapper}>
+                <Image
+                  source={{ uri: currentTrack.thumbnail }}
+                  style={styles.nowPlayingThumbnail}
+                />
+              </View>
               <View style={styles.nowPlayingInfo}>
                 <Text style={styles.nowPlayingTitle} numberOfLines={1}>
                   {currentTrack.title}
@@ -75,7 +79,9 @@ export const QueueModal: React.FC = () => {
                   {currentTrack.artist}
                 </Text>
               </View>
-              <Music size={20} color="#FF0000" />
+              <View style={styles.activeIconCircle}>
+                <Volume2 size={16} color="#FF1E44" />
+              </View>
             </View>
           </View>
         )}
@@ -90,7 +96,7 @@ export const QueueModal: React.FC = () => {
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>No tracks queued up next.</Text>
               <Text style={styles.emptySubtext}>
-                Play a song or use "Add to Queue" from any track.
+                Play a song or tap the 3-dot options menu to "Add to Queue" or "Play Next".
               </Text>
             </View>
           ) : (
@@ -107,10 +113,12 @@ export const QueueModal: React.FC = () => {
                       onPress={() => playTrack(item, queue)}
                       activeOpacity={0.7}
                     >
-                      <Image
-                        source={{ uri: item.thumbnail }}
-                        style={styles.queueThumbnail}
-                      />
+                      <View style={styles.queueThumbWrapper}>
+                        <Image
+                          source={{ uri: item.thumbnail }}
+                          style={styles.queueThumbnail}
+                        />
+                      </View>
                       <View style={styles.queueInfo}>
                         <Text style={styles.queueTitle} numberOfLines={1}>
                           {item.title}
@@ -125,7 +133,7 @@ export const QueueModal: React.FC = () => {
                       onPress={() => removeFromQueue(actualIndex)}
                       activeOpacity={0.7}
                     >
-                      <X size={18} color="#888888" />
+                      <X size={18} color="#6A6A7D" />
                     </TouchableOpacity>
                   </View>
                 );
@@ -141,7 +149,7 @@ export const QueueModal: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#08080A',
   },
   header: {
     flexDirection: 'row',
@@ -150,21 +158,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#222222',
+    borderBottomColor: '#1A1A24',
   },
   closeButton: {
     padding: 6,
   },
+  headerSpacer: {
+    width: 40,
+  },
   headerTitle: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
   },
   clearButton: {
     padding: 6,
   },
   clearButtonText: {
-    color: '#FF0000',
+    color: '#FF1E44',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -174,23 +185,31 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   sectionHeader: {
-    color: '#888888',
-    fontSize: 12,
+    color: '#6A6A7D',
+    fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     marginBottom: 10,
   },
   nowPlayingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#12121A',
+    borderWidth: 1,
+    borderColor: '#242434',
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 14,
+  },
+  nowPlayingThumbWrapper: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2A2A38',
+    overflow: 'hidden',
   },
   nowPlayingThumbnail: {
     width: 48,
     height: 48,
-    borderRadius: 6,
+    backgroundColor: '#161620',
   },
   nowPlayingInfo: {
     flex: 1,
@@ -203,9 +222,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   nowPlayingArtist: {
-    color: '#AAAAAA',
+    color: '#8E8E9F',
     fontSize: 13,
     marginTop: 2,
+  },
+  activeIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 30, 68, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   upNextSection: {
     flex: 1,
@@ -216,17 +243,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#121218',
   },
   queueItemMain: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
+  queueThumbWrapper: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#22222E',
+    overflow: 'hidden',
+  },
   queueThumbnail: {
     width: 44,
     height: 44,
-    borderRadius: 6,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#161620',
   },
   queueInfo: {
     flex: 1,
@@ -239,7 +273,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   queueArtist: {
-    color: '#888888',
+    color: '#8E8E9F',
     fontSize: 12,
     marginTop: 2,
   },
@@ -253,15 +287,16 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   emptyText: {
-    color: '#AAAAAA',
-    fontSize: 16,
+    color: '#8E8E9F',
+    fontSize: 15,
     fontWeight: '600',
   },
   emptySubtext: {
-    color: '#666666',
+    color: '#555566',
     fontSize: 13,
     marginTop: 6,
     textAlign: 'center',
     paddingHorizontal: 32,
+    lineHeight: 18,
   },
 });

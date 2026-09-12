@@ -73,7 +73,7 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
         )}
 
         {/* Thumbnail with overlay icon if playing */}
-        <View style={styles.thumbnailWrapper}>
+        <View style={[styles.thumbnailWrapper, isCurrent && styles.activeThumbnailWrapper]}>
           <Image
             source={{ uri: track.thumbnail }}
             style={styles.thumbnail}
@@ -81,7 +81,7 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
           />
           {isCurrent && (
             <View style={styles.playingBadge}>
-              <Volume2 size={14} color="#FF0000" />
+              <Volume2 size={12} color="#FFFFFF" />
             </View>
           )}
         </View>
@@ -106,7 +106,7 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
           onPress={() => setMenuVisible(true)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <MoreVertical size={18} color="#888888" />
+          <MoreVertical size={18} color={isCurrent ? '#FF1E44' : '#6A6A7D'} />
         </TouchableOpacity>
       </TouchableOpacity>
 
@@ -120,12 +120,17 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
         <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
+              {/* Grab Handle */}
+              <View style={styles.grabHandle} />
+
               {/* Header Info */}
               <View style={styles.modalHeader}>
-                <Image
-                  source={{ uri: track.thumbnail }}
-                  style={styles.modalThumbnail}
-                />
+                <View style={styles.modalThumbWrapper}>
+                  <Image
+                    source={{ uri: track.thumbnail }}
+                    style={styles.modalThumbnail}
+                  />
+                </View>
                 <View style={styles.modalHeaderText}>
                   <Text style={styles.modalTitle} numberOfLines={1}>
                     {track.title}
@@ -146,7 +151,9 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
                   setMenuVisible(false);
                 }}
               >
-                <ListStart size={20} color="#FFFFFF" />
+                <View style={styles.actionIconWrapper}>
+                  <ListStart size={18} color="#FFFFFF" />
+                </View>
                 <Text style={styles.menuActionText}>Play Next</Text>
               </TouchableOpacity>
 
@@ -157,7 +164,9 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
                   setMenuVisible(false);
                 }}
               >
-                <ListPlus size={20} color="#FFFFFF" />
+                <View style={styles.actionIconWrapper}>
+                  <ListPlus size={18} color="#FFFFFF" />
+                </View>
                 <Text style={styles.menuActionText}>Add to Queue</Text>
               </TouchableOpacity>
 
@@ -168,11 +177,13 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
                   setMenuVisible(false);
                 }}
               >
-                <Heart
-                  size={20}
-                  color={isLiked ? '#FF0000' : '#FFFFFF'}
-                  fill={isLiked ? '#FF0000' : 'transparent'}
-                />
+                <View style={styles.actionIconWrapper}>
+                  <Heart
+                    size={18}
+                    color={isLiked ? '#FF1E44' : '#FFFFFF'}
+                    fill={isLiked ? '#FF1E44' : 'transparent'}
+                  />
+                </View>
                 <Text style={styles.menuActionText}>
                   {isLiked ? 'Remove from Liked' : 'Save to Liked Songs'}
                 </Text>
@@ -183,9 +194,11 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
                 onPress={handleDownload}
                 disabled={downloading}
               >
-                <Download size={20} color="#FFFFFF" />
+                <View style={styles.actionIconWrapper}>
+                  <Download size={18} color="#FFFFFF" />
+                </View>
                 <Text style={styles.menuActionText}>
-                  {downloading ? 'Downloading...' : 'Download Offline'}
+                  {downloading ? 'Downloading to storage...' : 'Download Offline'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -200,15 +213,19 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 9,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 12,
+    marginHorizontal: 8,
+    marginVertical: 1,
   },
   activeContainer: {
-    backgroundColor: 'rgba(255, 0, 0, 0.08)',
+    backgroundColor: 'rgba(255, 30, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 30, 68, 0.25)',
   },
   indexText: {
-    color: '#888888',
+    color: '#6A6A7D',
     fontSize: 14,
     fontWeight: '600',
     width: 24,
@@ -216,24 +233,31 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   activeIndexText: {
-    color: '#FF0000',
+    color: '#FF1E44',
+    fontWeight: '700',
   },
   thumbnailWrapper: {
     position: 'relative',
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#22222E',
+  },
+  activeThumbnailWrapper: {
+    borderColor: '#FF1E44',
   },
   thumbnail: {
-    width: 52,
-    height: 52,
-    borderRadius: 6,
-    backgroundColor: '#1E1E1E',
+    width: 50,
+    height: 50,
+    backgroundColor: '#161620',
   },
   playingBadge: {
     position: 'absolute',
     bottom: 2,
     right: 2,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    borderRadius: 10,
-    padding: 2,
+    backgroundColor: '#FF1E44',
+    borderRadius: 8,
+    padding: 3,
   },
   info: {
     flex: 1,
@@ -242,17 +266,17 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
     letterSpacing: 0.1,
   },
   activeTitle: {
-    color: '#FF0000',
+    color: '#FF1E44',
     fontWeight: '700',
   },
   meta: {
-    color: '#888888',
-    fontSize: 13,
+    color: '#8E8E9F',
+    fontSize: 12,
     marginTop: 3,
   },
   menuButton: {
@@ -261,25 +285,41 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#212121',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: '#14141B',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderWidth: 1,
+    borderColor: '#262634',
     padding: 20,
     paddingBottom: 36,
+  },
+  grabHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#333344',
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
+  modalThumbWrapper: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2A2A38',
+    overflow: 'hidden',
+  },
   modalThumbnail: {
     width: 48,
     height: 48,
-    borderRadius: 6,
+    backgroundColor: '#1A1A24',
   },
   modalHeaderText: {
     flex: 1,
@@ -287,28 +327,36 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   modalArtist: {
-    color: '#AAAAAA',
+    color: '#8E8E9F',
     fontSize: 13,
     marginTop: 3,
   },
   divider: {
     height: 1,
-    backgroundColor: '#333333',
+    backgroundColor: '#20202C',
     marginVertical: 12,
   },
   menuAction: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
+  },
+  actionIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1E1E28',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   menuActionText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    marginLeft: 16,
+    color: '#E0E0EC',
+    fontSize: 14,
+    marginLeft: 14,
     fontWeight: '500',
   },
 });

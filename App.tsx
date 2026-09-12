@@ -55,7 +55,7 @@ function MainApp() {
       <MiniPlayer />
 
       {/* Bottom Navigation Bar */}
-      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => setActiveTab('home')}
@@ -63,7 +63,7 @@ function MainApp() {
         >
           <Home
             size={22}
-            color={activeTab === 'home' ? '#FFFFFF' : '#777777'}
+            color={activeTab === 'home' ? '#FF1E44' : '#8A8A9E'}
           />
           <Text
             style={[
@@ -73,6 +73,7 @@ function MainApp() {
           >
             Home
           </Text>
+          {activeTab === 'home' && <View style={styles.activeDot} />}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -82,7 +83,7 @@ function MainApp() {
         >
           <Search
             size={22}
-            color={activeTab === 'search' ? '#FFFFFF' : '#777777'}
+            color={activeTab === 'search' ? '#FF1E44' : '#8A8A9E'}
           />
           <Text
             style={[
@@ -92,6 +93,7 @@ function MainApp() {
           >
             Explore
           </Text>
+          {activeTab === 'search' && <View style={styles.activeDot} />}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -101,7 +103,7 @@ function MainApp() {
         >
           <Library
             size={22}
-            color={activeTab === 'library' ? '#FFFFFF' : '#777777'}
+            color={activeTab === 'library' ? '#FF1E44' : '#8A8A9E'}
           />
           <Text
             style={[
@@ -111,6 +113,7 @@ function MainApp() {
           >
             Library
           </Text>
+          {activeTab === 'library' && <View style={styles.activeDot} />}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -120,7 +123,7 @@ function MainApp() {
         >
           <SettingsIcon
             size={22}
-            color={activeTab === 'settings' ? '#FFFFFF' : '#777777'}
+            color={activeTab === 'settings' ? '#FF1E44' : '#8A8A9E'}
           />
           <Text
             style={[
@@ -130,6 +133,7 @@ function MainApp() {
           >
             Settings
           </Text>
+          {activeTab === 'settings' && <View style={styles.activeDot} />}
         </TouchableOpacity>
       </View>
 
@@ -154,17 +158,17 @@ export default function App() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#030303',
+    backgroundColor: '#08080A',
   },
   screenContainer: {
     flex: 1,
   },
   bottomBar: {
     flexDirection: 'row',
-    backgroundColor: '#141414',
+    backgroundColor: '#121217',
     borderTopWidth: 1,
-    borderTopColor: '#242424',
-    paddingTop: 8,
+    borderTopColor: '#22222C',
+    paddingTop: 10,
     alignItems: 'center',
     justifyContent: 'space-around',
   },
@@ -172,15 +176,25 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    paddingVertical: 2,
+    position: 'relative',
   },
   tabLabel: {
-    color: '#777777',
-    fontSize: 10,
+    color: '#8A8A9E',
+    fontSize: 11,
     fontWeight: '600',
     marginTop: 4,
+    letterSpacing: 0.2,
   },
   activeTabLabel: {
     color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FF1E44',
+    marginTop: 4,
   },
 });
