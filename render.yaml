@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: symphony-backend
+    runtime: docker
+    plan: starter
+    region: oregon
+    rootDir: server
+    dockerfilePath: Dockerfile
+    autoDeploy: true
+    healthCheckPath: /api/health
