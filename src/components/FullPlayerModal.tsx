@@ -101,7 +101,11 @@ export const FullPlayerModal: React.FC = () => {
     const res = await api.downloadTrack(currentTrack.id);
     setIsDownloading(false);
     if (res.success) {
-      await StorageService.addDownload(currentTrack);
+      await StorageService.addDownload({
+        ...currentTrack,
+        streamUrl: res.url,
+        isDownloaded: true,
+      });
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
     }

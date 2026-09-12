@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Track, RepeatMode, ServerConfig } from '../types';
 import { api } from '../services/api';
 import { StorageService } from '../services/storage';
@@ -114,8 +114,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     await StorageService.saveServerConfig(newConfig);
   };
 
+  const hasAttemptedFallbackRef = useRef<boolean>(false);
+
   const playTrack = async (track: Track, newQueue?: Track[]) => {
     try {
+      hasAttemptedFallbackRef.current = false;
       setIsLoading(true);
       setCurrentTrack(track);
       setCurrentTime(0);
@@ -143,14 +146,29 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Record to history
       await StorageService.addToHistory(track);
 
-      // Fetch stream URL
-      const streamUrl = await api.getStreamUrl(track.id);
+      // Priority 1: Direct streamUrl if already attached
+      let streamUrl = track.streamUrl;
+
+      // Priority 2: Check offline downloads cache
+      if (!streamUrl) {
+        const downloads = await StorageService.getDownloads();
+        const downloaded = downloads.find((d) => d.id === track.id);
+        if (downloaded?.streamUrl) {
+          streamUrl = downloaded.streamUrl;
+        }
+      }
+
+      // Priority 3: Resolve cloud stream URL
+      if (!streamUrl) {
+        streamUrl = await api.getStreamUrl(track.id);
+      }
+
       setActiveStreamUrl(streamUrl);
       setIsPlaying(true);
     } catch (e) {
       console.error('Failed to play track:', e);
-    } finally {
       setIsLoading(false);
+      setIsPlaying(false);
     }
   };
 
@@ -284,7 +302,21 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const onAudioError = (error: any) => {
-    console.error('Audio playback error:', error);
+    console.warn('[PlayerContext] Audio playback error on stream:', activeStreamUrl, error);
+    if (
+      currentTrack &&
+      !hasAttemptedFallbackRef.current &&
+      activeStreamUrl &&
+      !activeStreamUrl.includes('pipe=true')
+    ) {
+      console.log('[PlayerContext] Attempting resilient fallback to backend piped audio stream...');
+      hasAttemptedFallbackRef.current = true;
+      setIsLoading(true);
+      const pipeUrl = `${api.getBaseUrl()}/api/stream/${currentTrack.id}?pipe=true`;
+      setActiveStreamUrl(pipeUrl);
+      setIsPlaying(true);
+      return;
+    }
     setIsLoading(false);
     setIsPlaying(false);
   };

@@ -58,6 +58,11 @@ setInterval(() => {
   for (const [key, val] of cache.streamUrls.entries()) {
     if (now - val.timestamp > 3600000) cache.streamUrls.delete(key);
   }
+  for (const key of Object.keys(cache.trending)) {
+    if (cache.trending[key] && now - cache.trending[key].timestamp > 1800000) {
+      delete cache.trending[key];
+    }
+  }
 }, 300000);
 
 // Helper to format seconds into mm:ss

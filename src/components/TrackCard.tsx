@@ -105,7 +105,11 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
     setDownloading(true);
     const res = await api.downloadTrack(track.id);
     if (res.success) {
-      await StorageService.addDownload(track);
+      await StorageService.addDownload({
+        ...track,
+        streamUrl: res.url,
+        isDownloaded: true,
+      });
     }
     setDownloading(false);
     setMenuVisible(false);
