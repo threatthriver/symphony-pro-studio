@@ -173,6 +173,9 @@ export const LibraryScreen: React.FC = () => {
           keyExtractor={(item, idx) => `${item.id}-${idx}`}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
           renderItem={({ item, index }) => (
             <TrackCard
               track={item}

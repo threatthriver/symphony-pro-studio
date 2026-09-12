@@ -46,7 +46,19 @@ console.log(`[yt-music-server] Using yt-dlp executable: ${YT_DLP_BIN}`);
 const cache = {
   trending: {},
   streamUrls: new Map(), // videoId -> { url, timestamp }
+  searches: new Map(),   // queryKey -> { results, timestamp }
 };
+
+// Periodically prune stale caches to keep memory footprint minimal
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of cache.searches.entries()) {
+    if (now - val.timestamp > 1800000) cache.searches.delete(key);
+  }
+  for (const [key, val] of cache.streamUrls.entries()) {
+    if (now - val.timestamp > 3600000) cache.streamUrls.delete(key);
+  }
+}, 300000);
 
 // Helper to format seconds into mm:ss
 function formatDuration(seconds) {
@@ -119,6 +131,12 @@ app.get('/api/search', (req, res) => {
     return res.status(400).json({ error: 'Search query "q" is required' });
   }
 
+  const cacheKey = `${query.trim().toLowerCase()}_${limit}`;
+  const cached = cache.searches.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < 900000) {
+    return res.json({ results: cached.results, count: cached.results.length, cached: true });
+  }
+
   // Enhance query to prefer audio/songs
   const searchQuery = `ytsearch${limit}:${query.trim()} official audio`;
   const args = [searchQuery, '--dump-single-json', '--flat-playlist', '--skip-download'];
@@ -145,7 +163,8 @@ app.get('/api/search', (req, res) => {
       const parsed = JSON.parse(stdoutData);
       const entries = parsed.entries || [];
       const results = entries.map(cleanTrackInfo);
-      res.json({ results, count: results.length });
+      cache.searches.set(cacheKey, { results, timestamp: Date.now() });
+      res.json({ results, count: results.length, cached: false });
     } catch (parseErr) {
       res.status(500).json({ error: 'Failed to parse search results', details: parseErr.message });
     }

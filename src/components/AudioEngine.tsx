@@ -39,6 +39,13 @@ export const AudioEngine: React.FC = () => {
         playInBackground={true}
         playWhenInactive={true}
         ignoreSilentSwitch="ignore"
+        progressUpdateInterval={500}
+        bufferConfig={{
+          minBufferMs: 5000,
+          maxBufferMs: 30000,
+          bufferForPlaybackMs: 1500,
+          bufferForPlaybackAfterRebufferMs: 3000,
+        }}
         rate={1.0}
         volume={1.0}
         muted={false}

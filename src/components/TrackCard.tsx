@@ -28,7 +28,7 @@ interface TrackCardProps {
   showIndex?: boolean;
 }
 
-export const TrackCard: React.FC<TrackCardProps> = ({
+const TrackCardComponent: React.FC<TrackCardProps> = ({
   track,
   onPress,
   index,
@@ -312,3 +312,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+export const TrackCard = React.memo(TrackCardComponent);

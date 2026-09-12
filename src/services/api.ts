@@ -7,6 +7,10 @@ const DEFAULT_HOST = RENDER_CLOUD_HOST;
 
 class ApiService {
   private baseUrl: string = DEFAULT_HOST;
+  private trendingCache = new Map<string, { data: Track[]; timestamp: number }>();
+  private searchCache = new Map<string, { data: Track[]; timestamp: number }>();
+  private streamCache = new Map<string, { url: string; timestamp: number }>();
+  private searchAbortController: AbortController | null = null;
 
   constructor() {
     this.baseUrl = DEFAULT_HOST;
@@ -18,6 +22,9 @@ class ApiService {
 
   setBaseUrl(url: string) {
     this.baseUrl = url.replace(/\/+$/, '');
+    this.trendingCache.clear();
+    this.searchCache.clear();
+    this.streamCache.clear();
   }
 
   async checkHealth(): Promise<{ isConnected: boolean; ytDlpVersion: string }> {
@@ -64,25 +71,51 @@ class ApiService {
   }
 
   async searchTracks(query: string, limit: number = 15): Promise<Track[]> {
+    const trimmed = query.trim().toLowerCase();
+    const cacheKey = `${trimmed}_${limit}`;
+    const cached = this.searchCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < 600000) {
+      return cached.data;
+    }
+
+    if (this.searchAbortController) {
+      this.searchAbortController.abort();
+    }
+    this.searchAbortController = new AbortController();
+
     try {
       const res = await fetch(
-        `${this.baseUrl}/api/search?q=${encodeURIComponent(query)}&limit=${limit}`
+        `${this.baseUrl}/api/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+        { signal: this.searchAbortController.signal }
       );
       if (!res.ok) throw new Error(`Search failed: ${res.statusText}`);
       const data = await res.json();
-      return data.results || [];
-    } catch (e) {
+      const results: Track[] = data.results || [];
+      this.searchCache.set(cacheKey, { data: results, timestamp: Date.now() });
+      return results;
+    } catch (e: any) {
+      if (e?.name === 'AbortError') {
+        return [];
+      }
       console.error('Search API error:', e);
       return [];
     }
   }
 
   async getStreamUrl(trackId: string): Promise<string> {
+    const cached = this.streamCache.get(trackId);
+    if (cached && Date.now() - cached.timestamp < 2700000) {
+      return cached.url;
+    }
+
     try {
       const res = await fetch(`${this.baseUrl}/api/stream-url/${trackId}`);
       if (res.ok) {
         const data = await res.json();
-        if (data.streamUrl) return data.streamUrl;
+        if (data.streamUrl) {
+          this.streamCache.set(trackId, { url: data.streamUrl, timestamp: Date.now() });
+          return data.streamUrl;
+        }
       }
     } catch (e) {
       console.warn('Stream URL endpoint failed, using direct stream route:', e);
@@ -92,11 +125,18 @@ class ApiService {
   }
 
   async getTrending(genre: string = 'top'): Promise<Track[]> {
+    const cached = this.trendingCache.get(genre);
+    if (cached && Date.now() - cached.timestamp < 600000) {
+      return cached.data;
+    }
+
     try {
       const res = await fetch(`${this.baseUrl}/api/trending?genre=${genre}`);
       if (!res.ok) throw new Error('Failed to fetch trending');
       const data = await res.json();
-      return data.results || [];
+      const results: Track[] = data.results || [];
+      this.trendingCache.set(genre, { data: results, timestamp: Date.now() });
+      return results;
     } catch (e) {
       console.error('Trending API error:', e);
       return [];
