@@ -127,6 +127,13 @@ export const SettingsScreen: React.FC = () => {
         <View style={styles.presetsRow}>
           <TouchableOpacity
             style={styles.presetChip}
+            onPress={() => setPreset('https://symphony-backend-d2lk.onrender.com')}
+          >
+            <Text style={styles.presetChipText}>Render Cloud (24/7)</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.presetChip}
             onPress={() => setPreset('http://localhost:5050')}
           >
             <Text style={styles.presetChipText}>Localhost (iOS)</Text>

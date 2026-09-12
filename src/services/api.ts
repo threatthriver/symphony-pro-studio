@@ -1,8 +1,9 @@
 import { Platform } from 'react-native';
 import { Track } from '../types';
 
+const RENDER_CLOUD_HOST = 'https://symphony-backend-d2lk.onrender.com';
 const DEFAULT_PORT = 5050;
-const DEFAULT_HOST = `http://localhost:${DEFAULT_PORT}`;
+const DEFAULT_HOST = RENDER_CLOUD_HOST;
 
 class ApiService {
   private baseUrl: string = DEFAULT_HOST;

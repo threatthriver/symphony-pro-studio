@@ -152,6 +152,13 @@ app.get('/api/search', (req, res) => {
   });
 });
 
+// Common extractor arguments to prevent bot detection and use Node runtime
+const COMMON_YT_ARGS = [
+  '--js-runtimes', 'node',
+  '--remote-components', 'ejs:github',
+  '--extractor-args', 'youtube:player_client=tv,android,web',
+];
+
 // 3. Direct Stream URL Resolution
 app.get('/api/stream-url/:id', (req, res) => {
   const videoId = req.params.id;
@@ -164,9 +171,14 @@ app.get('/api/stream-url/:id', (req, res) => {
   }
 
   const url = `https://www.youtube.com/watch?v=${videoId}`;
-  const args = ['-g', '-f', '140/bestaudio[ext=m4a]/bestaudio', url];
+  const args = [
+    ...COMMON_YT_ARGS,
+    '-g',
+    '-f', 'bestaudio[ext=m4a]/bestaudio/best',
+    url,
+  ];
 
-  exec(`${YT_DLP_BIN} ${args.join(' ')}`, { timeout: 15000 }, (err, stdout, stderr) => {
+  exec(`${YT_DLP_BIN} ${args.map(a => `"${a}"`).join(' ')}`, { timeout: 20000 }, (err, stdout, stderr) => {
     if (err || !stdout.trim()) {
       return res.status(500).json({ error: 'Failed to extract stream URL', details: stderr });
     }
@@ -193,9 +205,14 @@ app.get('/api/stream/:id', (req, res) => {
     }
 
     const url = `https://www.youtube.com/watch?v=${videoId}`;
-    const args = ['-g', '-f', 'bestaudio[ext=m4a]/bestaudio/best', url];
+    const args = [
+      ...COMMON_YT_ARGS,
+      '-g',
+      '-f', 'bestaudio[ext=m4a]/bestaudio/best',
+      url,
+    ];
 
-    exec(`${YT_DLP_BIN} ${args.join(' ')}`, { timeout: 15000 }, (err, stdout) => {
+    exec(`${YT_DLP_BIN} ${args.map(a => `"${a}"`).join(' ')}`, { timeout: 20000 }, (err, stdout) => {
       if (err || !stdout.trim()) {
         return res.status(500).json({ error: 'Failed to get stream' });
       }
@@ -206,7 +223,7 @@ app.get('/api/stream/:id', (req, res) => {
   } else {
     // Pipe raw audio stream
     const url = `https://www.youtube.com/watch?v=${videoId}`;
-    const proc = spawn(YT_DLP_BIN, ['-o', '-', '-f', 'bestaudio[ext=m4a]/bestaudio', url]);
+    const proc = spawn(YT_DLP_BIN, [...COMMON_YT_ARGS, '-o', '-', '-f', 'bestaudio[ext=m4a]/bestaudio', url]);
 
     res.setHeader('Content-Type', 'audio/mp4');
     proc.stdout.pipe(res);
@@ -274,6 +291,7 @@ app.post('/api/download/:id', (req, res) => {
 
   const url = `https://www.youtube.com/watch?v=${videoId}`;
   const args = [
+    ...COMMON_YT_ARGS,
     '-x',
     '--audio-format', 'mp3',
     '--audio-quality', '0',
