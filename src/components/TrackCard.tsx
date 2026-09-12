@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   TouchableWithoutFeedback,
+  Animated,
 } from 'react-native';
 import {
   MoreVertical,
@@ -14,7 +15,6 @@ import {
   ListStart,
   Heart,
   Download,
-  Volume2,
 } from 'lucide-react-native';
 import { Track } from '../types';
 import { usePlayer } from '../context/PlayerContext';
@@ -28,6 +28,58 @@ interface TrackCardProps {
   showIndex?: boolean;
 }
 
+const EqualizerBars: React.FC<{ isPlaying: boolean }> = React.memo(({ isPlaying }) => {
+  const bar1 = useRef(new Animated.Value(0.4)).current;
+  const bar2 = useRef(new Animated.Value(0.9)).current;
+  const bar3 = useRef(new Animated.Value(0.6)).current;
+
+  useEffect(() => {
+    if (!isPlaying) {
+      bar1.setValue(0.3);
+      bar2.setValue(0.5);
+      bar3.setValue(0.4);
+      return;
+    }
+
+    const anim1 = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bar1, { toValue: 1, duration: 380, useNativeDriver: true }),
+        Animated.timing(bar1, { toValue: 0.25, duration: 380, useNativeDriver: true }),
+      ])
+    );
+    const anim2 = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bar2, { toValue: 0.25, duration: 280, useNativeDriver: true }),
+        Animated.timing(bar2, { toValue: 1, duration: 320, useNativeDriver: true }),
+      ])
+    );
+    const anim3 = Animated.loop(
+      Animated.sequence([
+        Animated.timing(bar3, { toValue: 1, duration: 420, useNativeDriver: true }),
+        Animated.timing(bar3, { toValue: 0.3, duration: 340, useNativeDriver: true }),
+      ])
+    );
+
+    anim1.start();
+    anim2.start();
+    anim3.start();
+
+    return () => {
+      anim1.stop();
+      anim2.stop();
+      anim3.stop();
+    };
+  }, [isPlaying, bar1, bar2, bar3]);
+
+  return (
+    <View style={styles.equalizerWrap}>
+      <Animated.View style={[styles.equalizerBar, { transform: [{ scaleY: bar1 }] }]} />
+      <Animated.View style={[styles.equalizerBar, { transform: [{ scaleY: bar2 }] }]} />
+      <Animated.View style={[styles.equalizerBar, { transform: [{ scaleY: bar3 }] }]} />
+    </View>
+  );
+});
+
 const TrackCardComponent: React.FC<TrackCardProps> = ({
   track,
   onPress,
@@ -36,6 +88,7 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
 }) => {
   const {
     currentTrack,
+    isPlaying,
     likedTracks,
     toggleLike,
     addToQueue,
@@ -81,7 +134,7 @@ const TrackCardComponent: React.FC<TrackCardProps> = ({
           />
           {isCurrent && (
             <View style={styles.playingBadge}>
-              <Volume2 size={12} color="#FFFFFF" />
+              <EqualizerBars isPlaying={isPlaying} />
             </View>
           )}
         </View>
@@ -257,7 +310,23 @@ const styles = StyleSheet.create({
     right: 2,
     backgroundColor: '#FF1E44',
     borderRadius: 8,
-    padding: 3,
+    paddingHorizontal: 4,
+    paddingVertical: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  equalizerWrap: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 10,
+    width: 12,
+    justifyContent: 'space-between',
+  },
+  equalizerBar: {
+    width: 2.5,
+    height: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.5,
   },
   info: {
     flex: 1,

@@ -177,6 +177,12 @@ export const LibraryScreen: React.FC = () => {
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           windowSize={5}
+          removeClippedSubviews={true}
+          getItemLayout={(_data, index) => ({
+            length: 68,
+            offset: 68 * index,
+            index,
+          })}
           renderItem={({ item, index }) => (
             <TrackCard
               track={item}

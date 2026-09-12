@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -60,8 +60,8 @@ export const HomeScreen: React.FC = () => {
     fetchTracks(selectedMood);
   };
 
-  const quickPicks = tracks.slice(0, 6);
-  const trendingList = tracks.slice(0, 15);
+  const quickPicks = useMemo(() => tracks.slice(0, 6), [tracks]);
+  const trendingList = useMemo(() => tracks.slice(0, 15), [tracks]);
 
   return (
     <ScrollView
@@ -71,8 +71,8 @@ export const HomeScreen: React.FC = () => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor="#FF0000"
-          colors={['#FF0000']}
+          tintColor="#FF1E44"
+          colors={['#FF1E44']}
         />
       }
     >

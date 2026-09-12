@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { StyleSheet, View, AppState, AppStateStatus } from 'react-native';
 import Video, { VideoRef } from 'react-native-video';
 import { usePlayer } from '../context/PlayerContext';
 
@@ -17,6 +17,19 @@ export const AudioEngine: React.FC = () => {
   } = usePlayer();
 
   const videoRef = useRef<VideoRef>(null);
+  const [appState, setAppState] = useState<AppStateStatus>(
+    (AppState.currentState as AppStateStatus) || 'active',
+  );
+
+  // Battery Optimization: Throttle progress events when app is backgrounded
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      setAppState(nextState);
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (seekTargetTime !== null && videoRef.current) {
@@ -29,6 +42,10 @@ export const AudioEngine: React.FC = () => {
     return null;
   }
 
+  // Active in foreground: 500ms for smooth seekbar.
+  // Backgrounded: 2500ms to conserve CPU cycles & battery wakeups.
+  const updateInterval = appState === 'active' ? 500 : 2500;
+
   return (
     <View style={styles.hiddenContainer} pointerEvents="none">
       <Video
@@ -39,7 +56,7 @@ export const AudioEngine: React.FC = () => {
         playInBackground={true}
         playWhenInactive={true}
         ignoreSilentSwitch="ignore"
-        progressUpdateInterval={500}
+        progressUpdateInterval={updateInterval}
         bufferConfig={{
           minBufferMs: 5000,
           maxBufferMs: 30000,

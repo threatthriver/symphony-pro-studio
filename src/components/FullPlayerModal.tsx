@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,6 +11,7 @@ import {
   StatusBar,
   Platform,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -61,6 +62,17 @@ export const FullPlayerModal: React.FC = () => {
   const [showLyrics, setShowLyrics] = useState(false);
   const insets = useSafeAreaInsets();
   const topInset = Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 12 : Math.max(insets.top, 16);
+
+  const artworkScale = useRef(new Animated.Value(isPlaying ? 1 : 0.92)).current;
+
+  useEffect(() => {
+    Animated.spring(artworkScale, {
+      toValue: isPlaying ? 1 : 0.92,
+      friction: 7,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  }, [isPlaying, artworkScale]);
 
   if (!currentTrack) return null;
 
@@ -135,13 +147,18 @@ export const FullPlayerModal: React.FC = () => {
         >
           {/* Artwork or Lyrics View */}
           {!showLyrics ? (
-            <View style={styles.artworkContainer}>
+            <Animated.View
+              style={[
+                styles.artworkContainer,
+                { transform: [{ scale: artworkScale }] },
+              ]}
+            >
               <Image
                 source={{ uri: currentTrack.thumbnail }}
                 style={styles.artwork}
                 resizeMode="cover"
               />
-            </View>
+            </Animated.View>
           ) : (
             <View style={styles.lyricsContainer}>
               <Text style={styles.lyricsTitle}>Lyrics</Text>

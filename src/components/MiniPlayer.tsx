@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { Play, Pause, SkipForward } from 'lucide-react-native';
 import { usePlayer } from '../context/PlayerContext';
@@ -22,12 +23,41 @@ export const MiniPlayer: React.FC = () => {
     setFullPlayerVisible,
   } = usePlayer();
 
+  const slideAnim = useRef(new Animated.Value(40)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (currentTrack) {
+      Animated.parallel([
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          friction: 8,
+          tension: 50,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [currentTrack, slideAnim, fadeAnim]);
+
   if (!currentTrack) return null;
 
   const progress = duration > 0 ? Math.min(currentTime / duration, 1) : 0;
 
   return (
-    <View style={styles.container}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+        },
+      ]}
+    >
       {/* Progress Bar Top Accent */}
       <View style={styles.progressBarBackground}>
         <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
@@ -84,7 +114,7 @@ export const MiniPlayer: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
