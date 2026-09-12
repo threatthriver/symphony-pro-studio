@@ -250,10 +250,27 @@ app.get('/api/stream/:id', (req, res) => {
     const proc = spawn(YT_DLP_BIN, [...COMMON_YT_ARGS, '-o', '-', '-f', 'bestaudio[ext=m4a]/bestaudio', url]);
 
     res.setHeader('Content-Type', 'audio/mp4');
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    // Drain stderr to prevent child_process pipe buffer deadlocks
+    proc.stderr.on('data', () => {});
+
+    proc.on('error', (err) => {
+      console.error('[Stream Pipe Error]', err);
+      if (!res.headersSent) {
+        res.status(500).end();
+      }
+    });
+
     proc.stdout.pipe(res);
 
     req.on('close', () => {
-      proc.kill();
+      try {
+        proc.kill('SIGTERM');
+      } catch (e) {
+        // ignore
+      }
     });
   }
 });

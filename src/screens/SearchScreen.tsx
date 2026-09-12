@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -33,21 +33,36 @@ export const SearchScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const handleSearch = async (searchTerm: string = query) => {
-    if (!searchTerm.trim()) return;
-    Keyboard.dismiss();
-    setLoading(true);
-    setHasSearched(true);
-    try {
-      const data = await api.searchTracks(searchTerm.trim(), 20);
-      setResults(data);
-    } catch (e) {
-      console.error('Search error:', e);
+  const handleSearch = useCallback(
+    async (searchTerm: string = query, dismissKeyboard: boolean = true) => {
+      if (!searchTerm.trim()) return;
+      if (dismissKeyboard) Keyboard.dismiss();
+      setLoading(true);
+      setHasSearched(true);
+      try {
+        const data = await api.searchTracks(searchTerm.trim(), 20);
+        setResults(data);
+      } catch (e) {
+        console.error('Search error:', e);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [query]
+  );
+
+  useEffect(() => {
+    if (!query.trim()) {
       setResults([]);
-    } finally {
-      setLoading(false);
+      setHasSearched(false);
+      return;
     }
-  };
+    const timer = setTimeout(() => {
+      handleSearch(query, false);
+    }, 550);
+    return () => clearTimeout(timer);
+  }, [query, handleSearch]);
 
   const handleClear = () => {
     setQuery('');

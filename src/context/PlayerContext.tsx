@@ -180,10 +180,16 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const skipToNext = () => {
     if (queue.length === 0) return;
 
-    if (isShuffle) {
-      const randomIdx = Math.floor(Math.random() * queue.length);
+    if (isShuffle && queue.length > 1) {
+      let randomIdx = Math.floor(Math.random() * queue.length);
+      while (randomIdx === currentIndex) {
+        randomIdx = Math.floor(Math.random() * queue.length);
+      }
       setCurrentIndex(randomIdx);
       playTrack(queue[randomIdx], queue);
+      return;
+    } else if (isShuffle && queue.length === 1) {
+      playTrack(queue[0], queue);
       return;
     }
 
